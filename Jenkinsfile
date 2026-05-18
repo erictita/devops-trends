@@ -44,7 +44,7 @@ pipeline {
                 deploy adapters: [
                     tomcat9(
                         credentialsId: 'TomcatCreds',
-                        url: 'http://localhost:8090'
+                        url: 'http://localhost:8080'
                     )
                 ],
                 contextPath: '/devops-trends',
@@ -57,7 +57,7 @@ pipeline {
     post {
         success {
             echo 'Deployment successful!'
-            echo 'App running at: http://localhost:8090/devops-trends'
+            echo 'App running at: http://localhost:8080/devops-trends'
         }
         failure {
             echo 'Pipeline failed. Check console output for details.'
