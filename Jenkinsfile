@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         maven 'Maven 3.9.9'
-        jdk 'JDK21'
+        jdk 'JDK-21.0.11'
     }
 
     stages {
@@ -13,7 +13,7 @@ pipeline {
                 echo 'Pulling source code from GitHub...'
                 git branch: 'main',
                     credentialsId: 'GitHubCreds',
-                    url: 'https://github.com/rollinopz/devops-trends.git'
+                    url: 'https://github.com/erictita/devops-trends.git'
             }
         }
 
