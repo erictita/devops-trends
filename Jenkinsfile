@@ -6,6 +6,12 @@ pipeline {
         jdk 'JDK21'
     }
 
+    environment {
+        WAR_FILE = 'target/devops-trends.war'
+        TOMCAT_URL = 'http://localhost:8080'
+        CONTEXT_PATH = '/devops-trends'
+    }
+
     stages {
 
         stage('Checkout') {
@@ -38,17 +44,24 @@ pipeline {
             }
         }
 
+        stage('Check Tomcat') {
+            steps {
+                echo "Checking Tomcat availability at ${TOMCAT_URL}"
+                bat 'powershell -NoProfile -Command "try { Invoke-WebRequest -Uri ''%TOMCAT_URL%'' -UseBasicParsing -TimeoutSec 10 } catch { exit 1 }"'
+            }
+        }
+
         stage('Deploy to Tomcat') {
             steps {
                 echo 'Deploying to local Tomcat...'
                 deploy adapters: [
                     tomcat9(
                         credentialsId: 'TomcatCreds',
-                        url: 'http://localhost:8080'
+                        url: "${TOMCAT_URL}"
                     )
                 ],
-                contextPath: '/devops-trends',
-                war: 'target/devops-trends.war'
+                contextPath: "${CONTEXT_PATH}",
+                war: "${WAR_FILE}"
             }
         }
 
@@ -57,7 +70,7 @@ pipeline {
     post {
         success {
             echo 'Deployment successful!'
-            echo 'App running at: http://localhost:8080/devops-trends'
+            echo "App running at: ${TOMCAT_URL}${CONTEXT_PATH}"
         }
         failure {
             echo 'Pipeline failed. Check console output for details.'
