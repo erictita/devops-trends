@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: devops-trends
-          image: admintita/devops-trends-app:latest
+          image: admintita/devops-trends-app:v25
           ports:
             - containerPort: 8080
