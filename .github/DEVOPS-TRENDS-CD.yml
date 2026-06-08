@@ -1,0 +1,55 @@
+name: devops-trends CD
+
+on:
+  workflow_run:
+    workflows: ["devops-trends CI"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download WAR artifact from CI
+        uses: actions/download-artifact@v4
+        with:
+          name: devops-trends-war
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Confirm WAR received
+        run: ls -la *.war
+
+      - name: Prepare GitHub Pages content
+        run: |
+          mkdir -p pages
+          cp src/main/webapp/index.html pages/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages
+
+  deploy-pages:
+    runs-on: ubuntu-latest
+
+    needs: deploy
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
