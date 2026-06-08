@@ -1,26 +1,49 @@
+name: devops-trends CI
+
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
+
+env:
+  WAR_FILE: target/devops-trends.war
+  APP_NAME: ${{ vars.APP_NAME }}
+  CONTEXT_PATH: ${{ vars.CONTEXT_PATH }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'microsoft'
+
       - name: Build
         run: mvn clean compile
+
       - name: Test
         run: mvn test
+
       - name: Package
         run: mvn package -DskipTests
+
+      - name: Print deployment info
+        run: |
+          echo "App:     ${{ env.APP_NAME }}"
+          echo "Context: ${{ env.CONTEXT_PATH }}"
+          echo "User:    ${{ secrets.TOMCAT_USER }}"
+          # TOMCAT_USER prints as *** — secrets are always masked in logs
+
       - name: Upload WAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: devops-trends-war
-          path: target/devops-trends.war
+          path: ${{ env.WAR_FILE }}
+          retention-days: 1
