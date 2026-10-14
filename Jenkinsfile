@@ -45,12 +45,12 @@ pipeline {
 
         stage('Deploy to Tomcat') {
             steps {
-                echo 'Deploying the application to Tomcat...'
+                echo 'Deploying the application to the new Tomcat server...'
 
                 deploy adapters: [
                     tomcat9(
                         credentialsId: 'TomcatCreds',
-                        url: 'http://localhost:8090'
+                        url: 'http://172.31.47.158:8090'
                     )
                 ],
                 contextPath: '/devops-trends',
@@ -62,7 +62,7 @@ pipeline {
     post {
         success {
             echo 'Deployment successful!'
-            echo 'Application: http://16.170.250.189:8090/devops-trends'
+            echo 'Application: http://13.51.195.182:8090/devops-trends'
         }
 
         failure {
