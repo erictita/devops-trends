@@ -1,3 +1,5 @@
+// Testing GitHub webhook integration
+
 pipeline {
     agent any
 
@@ -38,7 +40,6 @@ pipeline {
             steps {
                 echo 'Creating the WAR file...'
                 sh 'mvn -B package -DskipTests'
-
                 sh 'test -f target/devops-trends.war'
             }
         }
@@ -62,7 +63,7 @@ pipeline {
     post {
         success {
             echo 'Deployment successful!'
-            echo 'Application: http://13.51.195.182:8090/devops-trends'
+            echo 'Application: http://13.49.68.29:8090/devops-trends'
         }
 
         failure {
