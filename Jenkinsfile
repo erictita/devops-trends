@@ -51,7 +51,7 @@ pipeline {
                 deploy adapters: [
                     tomcat9(
                         credentialsId: 'TomcatCreds',
-                        url: 'http://172.31.47.158:8090'
+                        url: 'http://13.62.91.108:8090'
                     )
                 ],
                 contextPath: '/devops-trends',
@@ -63,7 +63,7 @@ pipeline {
     post {
         success {
             echo 'Deployment successful!'
-            echo 'Application: http://13.49.68.29:8090/devops-trends'
+            echo 'Application: http://13.62.91.108:8090/devops-trends'
         }
 
         failure {
