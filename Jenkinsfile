@@ -1,3 +1,4 @@
+```groovy
 // Testing GitHub webhook integration
 
 pipeline {
@@ -8,7 +9,7 @@ pipeline {
     }
 
     tools {
-        maven 'Maven 3.9.9'
+        maven 'Maven-3.9.9'
         jdk 'JDK21'
     }
 
@@ -46,12 +47,12 @@ pipeline {
 
         stage('Deploy to Tomcat') {
             steps {
-                echo 'Deploying the application to the new Tomcat server...'
+                echo 'Deploying the application to Tomcat...'
 
                 deploy adapters: [
                     tomcat9(
                         credentialsId: 'TomcatCreds',
-                        url: 'http://13.62.91.108:8090'
+                        url: 'http://172.31.38.176:8090'
                     )
                 ],
                 contextPath: '/devops-trends',
@@ -76,3 +77,4 @@ pipeline {
         }
     }
 }
+```
