@@ -1,11 +1,13 @@
-```groovy
 // Testing GitHub webhook integration
 
 pipeline {
     agent any
 
     options {
+        // Skip default automatic checkout since we handle it explicitly in the stages
         skipDefaultCheckout(true)
+        // Keep build history clean
+        buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
     tools {
@@ -17,9 +19,10 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Downloading source code from GitHub...'
-
-                git branch: 'main',
-                    url: 'https://github.com/erictita/devops-trends.git'
+                checkout([$class: 'GitSCM', 
+                    branches: [[name: '*/main']], 
+                    userRemoteConfigs: [[url: 'https://github.com/erictita/devops-trends.git']]
+                ])
             }
         }
 
@@ -41,6 +44,7 @@ pipeline {
             steps {
                 echo 'Creating the WAR file...'
                 sh 'mvn -B package -DskipTests'
+                // Ensure the war file actually exists before proceeding
                 sh 'test -f target/devops-trends.war'
             }
         }
@@ -48,7 +52,8 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 echo 'Deploying the application to Tomcat...'
-
+                
+                // Note: Ensure the Jenkins server can reach 172.31.38.176 on port 8090
                 deploy adapters: [
                     tomcat9(
                         credentialsId: 'TomcatCreds',
@@ -64,17 +69,16 @@ pipeline {
     post {
         success {
             echo 'Deployment successful!'
-            echo 'Application: http://13.62.91.108:8090/devops-trends'
+            echo 'Application URL: http://13.62.91.108:8090/devops-trends'
         }
 
         failure {
-            echo 'Pipeline failed. Check the Jenkins Console Output.'
+            echo 'Pipeline failed. Please check the Jenkins Console Output.'
         }
 
         always {
-            echo 'Pipeline finished.'
+            echo 'Cleaning up workspace...'
             deleteDir()
         }
     }
 }
-```
