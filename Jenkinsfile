@@ -11,7 +11,7 @@ pipeline {
     }
 
     tools {
-        maven 'Maven-3.9.9'
+        maven 'Maven-3.8.4'
         jdk 'JDK21'
     }
 
@@ -53,11 +53,11 @@ pipeline {
             steps {
                 echo 'Deploying the application to Tomcat...'
                 
-                // Note: Ensure the Jenkins server can reach 172.31.38.176 on port 8090
+                // Note: Ensure the Jenkins server can reach 172-31-34-224 on port 8090
                 deploy adapters: [
                     tomcat9(
                         credentialsId: 'TomcatCreds',
-                        url: 'http://172.31.38.176:8090'
+                        url: 'http://172-31-34-224:8090'
                     )
                 ],
                 contextPath: '/devops-trends',
