@@ -49,21 +49,20 @@ pipeline {
             }
         }
 
-        stage('Deploy to Tomcat') {
-            steps {
-                echo 'Deploying the application to Tomcat...'
-                
-                // Note: Ensure the Jenkins server can reach 172-31-34-224 on port 8090
-                deploy adapters: [
-                    tomcat9(
-                        credentialsId: 'TomcatCreds',
-                        url: 'http://172-31-34-224:8090'
-                    )
-                ],
-                contextPath: '/devops-trends',
-                war: 'target/devops-trends.war'
-            }
-        }
+       stage('Deploy to Tomcat') {
+    steps {
+        echo 'Deploying the application to Tomcat...'
+
+        deploy adapters: [
+            tomcat9(
+                credentialsId: 'TomcatCreds',
+                url: 'http://172.31.34.224:8090'
+            )
+        ],
+        contextPath: '/devops-trends',
+        war: 'target/devops-trends.war'
+    }
+}
     }
 
     post {
