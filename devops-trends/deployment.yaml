@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-trends-app
+  labels:
+    app: devops-trends-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-trends-app
+  template:
+    metadata:
+      labels:
+        app: devops-trends-app
+    spec:
+      containers:
+        - name: devops-trends-app
+          image: admintita/devops-trends-app:latest
+          ports:
+            - containerPort: 8080
