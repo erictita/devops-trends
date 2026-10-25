@@ -1,82 +1,82 @@
-// Testing GitHub webhook integration
-
 pipeline {
     agent any
 
-    options {
-        // Skip default automatic checkout since we handle it explicitly in the stages
-        skipDefaultCheckout(true)
-        // Keep build history clean
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-    }
-
     tools {
-        maven 'Maven-3.8.4'
+        maven 'Maven 3.9.9'
         jdk 'JDK21'
     }
 
+    environment {
+        WAR_FILE = 'target/devops-trends.war'
+        TOMCAT_URL = 'http://localhost:8081'
+        CONTEXT_PATH = '/devops-trends'
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
-                echo 'Downloading source code from GitHub...'
-                checkout([$class: 'GitSCM', 
-                    branches: [[name: '*/main']], 
-                    userRemoteConfigs: [[url: 'https://github.com/erictita/devops-trends.git']]
-                ])
+                echo 'Pulling source code from GitHub...'
+                git branch: 'main',
+                    credentialsId: 'GitHubCreds',
+                    url: 'https://github.com/erictita/devops-trends.git'
             }
         }
 
         stage('Build') {
             steps {
                 echo 'Compiling the application...'
-                sh 'mvn -B clean compile'
+                bat 'mvn clean compile'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running application tests...'
-                sh 'mvn -B test'
+                echo 'Running tests...'
+                bat 'mvn test'
             }
         }
 
         stage('Package') {
             steps {
-                echo 'Creating the WAR file...'
-                sh 'mvn -B package -DskipTests'
-                // Ensure the war file actually exists before proceeding
-                sh 'test -f target/devops-trends.war'
+                echo 'Packaging into WAR file...'
+                bat 'mvn package -DskipTests'
             }
         }
 
-       stage('Deploy to Tomcat') {
-    steps {
-        echo 'Deploying the application to Tomcat...'
+        stage('Check Tomcat') {
+            steps {
+                echo "Checking Tomcat availability at ${TOMCAT_URL}"
+                bat 'powershell -NoProfile -Command "try { Invoke-WebRequest -Uri ''%TOMCAT_URL%'' -UseBasicParsing -TimeoutSec 10 } catch { exit 1 }"'
+            }
+        }
 
-        deploy adapters: [
-            tomcat9(
-                credentialsId: 'TomcatCreds',
-                url: 'http://172.31.34.224:8090'
-            )
-        ],
-        contextPath: '/devops-trends',
-        war: 'target/devops-trends.war'
-    }
-}
+        stage('Deploy to Tomcat') {
+            steps {
+                echo 'Deploying to local Tomcat...'
+                deploy adapters: [
+                    tomcat9(
+                        credentialsId: 'TomcatCreds',
+                        url: "${TOMCAT_URL}"
+                    )
+                ],
+                contextPath: "${CONTEXT_PATH}",
+                war: "${WAR_FILE}"
+            }
+        }
+
     }
 
     post {
         success {
             echo 'Deployment successful!'
-            echo 'Application URL: http://13.62.91.108:8090/devops-trends'
+            echo "App running at: ${TOMCAT_URL}${CONTEXT_PATH}"
         }
-
         failure {
-            echo 'Pipeline failed. Please check the Jenkins Console Output.'
+            echo 'Pipeline failed. Check console output for details.'
         }
-
         always {
-            echo 'Cleaning up workspace...'
+            echo 'Pipeline finished. Cleaning workspace...'
             deleteDir()
         }
     }
