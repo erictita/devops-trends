@@ -16,7 +16,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Pulling source code from GitHub...'
-                git branch: 'main', url: 'https://github.com/erictita/devops-trends-ec2.git'
+                git branch: 'main', url: 'https://github.com'
             }
         }
 
@@ -43,14 +43,13 @@ pipeline {
 
         stage('Check Tomcat') {
             steps {
-                echo "Checking Tomcat availability at ${TOMCAT_URL}"
-                // Fixed quotes and using native Jenkins powershell block to ensure proper script validation
+                echo "Checking Tomcat availability at ${env.TOMCAT_URL}"
                 powershell '''
-                    try { 
-                        $response = Invoke-WebRequest -Uri $env:TOMCAT_URL -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+                    try {
+                        Invoke-WebRequest -Uri $env:TOMCAT_URL -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop | Out-Null
                         exit 0
-                    } catch { 
-                        exit 1 
+                    } catch {
+                        exit 1
                     }
                 '''
             }
