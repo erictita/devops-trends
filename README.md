@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/Tomcat-9.0+-red" alt="Tomcat">
 </p>
 
-<p align="center">A modern web application showcasing the latest DevOps trends, tools, and salary information. Built as an educational project to demonstrate CI/CD principles.</p>
+<p align="center">A moderne web application showcasing the latest DevOps trends, tools, and salary information. Built as an educational project to demonstrate CI/CD principles.</p>
 
 <hr>
 
