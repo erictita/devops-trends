@@ -47,7 +47,7 @@ pipeline {
         stage('Check Tomcat') {
             steps {
                 echo "Checking Tomcat availability at ${TOMCAT_URL}"
-                bat 'powershell -NoProfile -Command "try { Invoke-WebRequest -Uri ''%TOMCAT_URL%'' -UseBasicParsing -TimeoutSec 10 } catch { exit 1 }"'
+                bat 'bat 'powershell -NoProfile -Command "try { Invoke-WebRequest -Uri $env:TOMCAT_URL -UseBasicParsing -TimeoutSec 10 } catch { exit 1 }"'
             }
         }
 
