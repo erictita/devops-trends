@@ -1,89 +1,89 @@
 pipeline {
-agent any
+    agent any
 
-```
-tools {
-    maven 'Maven 3.9.9'
-    jdk 'JDK21'
-}
+    tools {
+        maven 'Maven 3.9.9'
+        jdk 'JDK21'
+    }
 
-environment {
-    WAR_FILE = 'target/devops-trends.war'
-    TOMCAT_URL = 'http://localhost:8081'
-    CONTEXT_PATH = '/devops-trends'
-}
+    environment {
+        WAR_FILE = 'target/devops-trends.war'
+        TOMCAT_URL = 'http://localhost:8081'
+        CONTEXT_PATH = '/devops-trends'
+    }
 
-stages {
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Pulling source code from GitHub...'
+                git branch: 'main', url: 'https://github.com/erictita/devops-trends-ec2.git'
+            }
+        }
 
-    stage('Checkout') {
-        steps {
-            echo 'Pulling source code from GitHub...'
+        stage('Build') {
+            steps {
+                echo 'Compiling the application...'
+                bat 'mvn clean compile'
+            }
+        }
 
-            git branch: 'main',
-                url: 'https://github.com/erictita/devops-trends-ec2.git'
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                bat 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo 'Packaging into WAR file...'
+                bat 'mvn package -DskipTests'
+            }
+        }
+
+        stage('Check Tomcat') {
+            steps {
+                echo "Checking Tomcat availability at ${TOMCAT_URL}"
+                // Fixed quotes and using native Jenkins powershell block to ensure proper script validation
+                powershell '''
+                    try { 
+                        $response = Invoke-WebRequest -Uri $env:TOMCAT_URL -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+                        exit 0
+                    } catch { 
+                        exit 1 
+                    }
+                '''
+            }
+        }
+
+        stage('Deploy to Tomcat') {
+            steps {
+                echo 'Deploying to Tomcat...'
+                deploy adapters: [
+                    tomcat9(
+                        credentialsId: 'TomcatCreds',
+                        url: "${env.TOMCAT_URL}"
+                    )
+                ],
+                contextPath: "${env.CONTEXT_PATH}",
+                war: "${env.WAR_FILE}"
+            }
         }
     }
 
-    stage('Build') {
-        steps {
-            echo 'Compiling the application...'
-            bat 'mvn clean compile'
+    post {
+        success {
+            echo 'Deployment successful!'
+            echo "Application URL: ${env.TOMCAT_URL}${env.CONTEXT_PATH}"
+        }
+
+        failure {
+            echo 'Pipeline failed. Check Console Output for details.'
+        }
+
+        always {
+            echo 'Pipeline finished.'
+            deleteDir()
         }
     }
-
-    stage('Test') {
-        steps {
-            echo 'Running tests...'
-            bat 'mvn test'
-        }
-    }
-
-    stage('Package') {
-        steps {
-            echo 'Packaging into WAR file...'
-            bat 'mvn package -DskipTests'
-        }
-    }
-
-    stage('Check Tomcat') {
-        steps {
-            echo "Checking Tomcat availability at ${TOMCAT_URL}"
-
-            bat 'powershell -NoProfile -Command "try { Invoke-WebRequest -Uri $env:TOMCAT_URL -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop | Out-Null; exit 0 } catch { exit 1 }"'
-        }
-    }
-
-    stage('Deploy to Tomcat') {
-        steps {
-            echo 'Deploying to Tomcat...'
-
-            deploy adapters: [
-                tomcat9(
-                    credentialsId: 'TomcatCreds',
-                    url: "${TOMCAT_URL}"
-                )
-            ],
-            contextPath: "${CONTEXT_PATH}",
-            war: "${WAR_FILE}"
-        }
-    }
-}
-
-post {
-    success {
-        echo 'Deployment successful!'
-        echo "Application URL: ${TOMCAT_URL}${CONTEXT_PATH}"
-    }
-
-    failure {
-        echo 'Pipeline failed. Check Console Output for details.'
-    }
-
-    always {
-        echo 'Pipeline finished.'
-        deleteDir()
-    }
-}
-```
-
 }
