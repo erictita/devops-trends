@@ -44,12 +44,16 @@ pipeline {
             }
         }
 
-        stage('Check Tomcat') {
+       stage('Check Tomcat') {
             steps {
                 echo "Checking Tomcat availability at ${TOMCAT_URL}"
-                sh 'powershell -NoProfile -Command "try { Invoke-WebRequest -Uri '%TOMCAT_URL%' -UseBasicParsing -TimeoutSec 10 } catch { exit 1 }"'
+                sh '''
+                    curl -fsS --max-time 10 "$TOMCAT_URL" > /dev/null
+                '''
             }
         }
+```
+
 
         stage('Deploy to Tomcat') {
             steps {
