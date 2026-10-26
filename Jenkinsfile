@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -8,12 +9,11 @@ pipeline {
 
     environment {
         WAR_FILE = 'target/devops-trends.war'
-        TOMCAT_URL = '16.16.14.133:8081'
+        TOMCAT_URL = 'http://16.16.14.133:8081'
         CONTEXT_PATH = '/devops-trends'
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 echo 'Pulling source code from GitHub...'
@@ -44,20 +44,19 @@ pipeline {
             }
         }
 
-       stage('Check Tomcat') {
+        stage('Check Tomcat') {
             steps {
                 echo "Checking Tomcat availability at ${TOMCAT_URL}"
                 sh '''
-                    curl -fsS --max-time 10 "$TOMCAT_URL" > /dev/null
+                    curl -fsS --max-time 10 "$TOMCAT_URL" -o /dev/null
                 '''
             }
         }
-```
-
 
         stage('Deploy to Tomcat') {
             steps {
-                echo 'Deploying to local Tomcat...'
+                echo "Deploying application to Tomcat at ${TOMCAT_URL}..."
+
                 deploy adapters: [
                     tomcat9(
                         credentialsId: 'TomcatCreds',
@@ -68,20 +67,22 @@ pipeline {
                 war: "${WAR_FILE}"
             }
         }
-
     }
 
     post {
         success {
             echo 'Deployment successful!'
-            echo "App running at: ${TOMCAT_URL}${CONTEXT_PATH}"
+            echo "App URL: ${TOMCAT_URL}${CONTEXT_PATH}"
         }
+
         failure {
-            echo 'Pipeline failed. Check console output for details.'
+            echo 'Pipeline failed. Check the console output for details.'
         }
+
         always {
             echo 'Pipeline finished. Cleaning workspace...'
             deleteDir()
         }
     }
 }
+```
