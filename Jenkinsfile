@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         WAR_FILE = 'target/devops-trends.war'
-        TOMCAT_URL = 'http://localhost:8081'
+        TOMCAT_URL = '16.16.14.133:8081'
         CONTEXT_PATH = '/devops-trends'
     }
 
