@@ -33,21 +33,21 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                bat 'mvn test'
+                sh 'mvn test'
             }
         }
 
         stage('Package') {
             steps {
                 echo 'Packaging into WAR file...'
-                bat 'mvn package -DskipTests'
+                sh 'mvn package -DskipTests'
             }
         }
 
         stage('Check Tomcat') {
             steps {
                 echo "Checking Tomcat availability at ${TOMCAT_URL}"
-                bat 'powershell -NoProfile -Command "try { Invoke-WebRequest -Uri '%TOMCAT_URL%' -UseBasicParsing -TimeoutSec 10 } catch { exit 1 }"'
+                sh 'powershell -NoProfile -Command "try { Invoke-WebRequest -Uri '%TOMCAT_URL%' -UseBasicParsing -TimeoutSec 10 } catch { exit 1 }"'
             }
         }
 
