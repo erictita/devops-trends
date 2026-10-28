@@ -15,7 +15,7 @@ echo 'Pulling source code from GitHub...'
 // Use the GitHub credential ID
 git branch: 'main',
 credentialsId: 'github-pat',
-url: 'https://github.com/<erictita>/devops-trends.git'
+url: 'https://github.com/erictita/devops-trends.git'
 }
 }
 stage('Build') {
