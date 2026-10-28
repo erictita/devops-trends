@@ -1,86 +1,74 @@
 pipeline {
-    agent any
-
-    tools {
-        maven 'Maven 3.9.9'
-        jdk 'JDK21'
-    }
-
-    environment {
-        WAR_FILE = 'target/devops-trends.war'
-        TOMCAT_URL = 'http://16.16.14.133:8081'
-        CONTEXT_PATH = '/devops-trends'
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                echo 'Pulling source code from GitHub...'
-                git branch: 'main',
-                    credentialsId: 'GitHubCreds',
-                    url: 'https://github.com/erictita/devops-trends.git'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo 'Compiling the application...'
-                sh 'mvn clean compile'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo 'Running tests...'
-                sh 'mvn test'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                echo 'Packaging into WAR file...'
-                sh 'mvn package -DskipTests'
-            }
-        }
-
-        stage('Check Tomcat') {
-            steps {
-                echo "Checking Tomcat availability at ${TOMCAT_URL}"
-                sh '''
-                    curl -fsS --max-time 10 "$TOMCAT_URL" -o /dev/null
-                '''
-            }
-        }
-
-        stage('Deploy to Tomcat') {
-            steps {
-                echo "Deploying application to Tomcat at ${TOMCAT_URL}..."
-
-                deploy adapters: [
-                    tomcat9(
-                        credentialsId: 'TomcatCreds',
-                        url: "${TOMCAT_URL}"
-                    )
-                ],
-                contextPath: "${CONTEXT_PATH}",
-                war: "${WAR_FILE}"
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Deployment successful!'
-            echo "App URL: ${TOMCAT_URL}${CONTEXT_PATH}"
-        }
-
-        failure {
-            echo 'Pipeline failed. Check the console output for details.'
-        }
-
-        always {
-            echo 'Pipeline finished. Cleaning workspace...'
-            deleteDir()
-        }
-    }
+agent any
+environment {
+// Tomcat private IP (deploys)
+TOMCAT_URL = 'http://<172.31.33.200>:8080'
+// Tomcat Elastic IP (browsing)
+TOMCAT_PUBLIC_URL = 'http://<16.16.14.133>:8080'
+// Tomcat application path
+CONTEXT_PATH = '/devops-trends'
+}
+stages {
+stage('Checkout') {
+steps {
+echo 'Pulling source code from GitHub...'
+// Use the GitHub credential ID
+git branch: 'main',
+credentialsId: 'github-pat',
+url: 'https://github.com/<erictita>/devops-trends.git'
+}
+}
+stage('Build') {
+steps {
+echo 'Compiling the application...'
+// Compile with Maven
+sh 'mvn -B clean compile'
+}
+}
+stage('Test') {
+steps {
+echo 'Running tests...'
+// Run Maven tests
+sh 'mvn -B test'
+}
+}
+stage('Package') {
+steps {
+echo 'Packaging into WAR file...'
+// Package WAR without rerunning tests
+sh 'mvn -B package -DskipTests'
+}
+}
+stage('Deploy to Tomcat') {
+steps {
+echo "Deploying to Tomcat EC2 at ${TOMCAT_URL}..."
+// Use the Deploy to container plugin
+// Use the Tomcat credential ID
+deploy adapters: [
+tomcat9(
+credentialsId: 'TomcatCreds',
+url: "${TOMCAT_URL}"
+)
+],
+// Set the deployment context path
+contextPath: "${CONTEXT_PATH}",
+war: 'target/devops-trends.war'
+}
+}
+}
+post {
+success {
+echo 'Deployment successful!'
+echo "Deployed to ${TOMCAT_URL}${CONTEXT_PATH} (Tomcat private IP)"
+echo "View the app at ${TOMCAT_PUBLIC_URL}${CONTEXT_PATH}"
+}
+failure {
+echo 'Pipeline failed. Check console output for details.'
+}
+always {
+echo 'Pipeline finished. Cleaning workspace...'
+// Clean the workspace
+deleteDir()
+}
+}
 }
