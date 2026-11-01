@@ -2,7 +2,7 @@ pipeline {
 agent any
 environment {
 // Tomcat private IP (deploys)
-TOMCAT_URL = 'http://172.31.24.33.200:8080'
+TOMCAT_URL = 'http://172.31.24.33:8080'
 // Tomcat Elastic IP (browsing)
 TOMCAT_PUBLIC_URL = 'http://13.49.16.31:8080'
 // Tomcat application path
