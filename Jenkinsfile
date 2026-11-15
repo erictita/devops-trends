@@ -2,9 +2,9 @@ pipeline {
 agent any
 environment {
 // Tomcat private IP (deploys)
-TOMCAT_URL = 'http://172.31.32.75:8080'
+TOMCAT_URL = 'http://172.31.33.235:8080'
 // Tomcat Elastic IP (browsing)
-TOMCAT_PUBLIC_URL = 'http://13.63.247.66:8080'
+TOMCAT_PUBLIC_URL = 'http://56.228.59.225:8080'
 // Tomcat application path
 CONTEXT_PATH = '/devops-trends'
 }
